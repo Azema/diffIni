@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 
 import os
 import re
@@ -38,6 +38,7 @@ def main():
       parser.error("incorrect number of arguments")
 
     parser = ConfigParser()
+    parser.optionxform = str
     parser.read(options.origin)
     sections = parser.sections()
     items = parser.items(sections[0])
@@ -46,6 +47,7 @@ def main():
     keysA = set(keysA)
 
     parser = ConfigParser()
+    parser.optionxform = str
     parser.read(options.dist)
     sections = parser.sections()
     items = parser.items(sections[0])
@@ -58,7 +60,7 @@ def main():
     for key in obsolets : print "\t" + key
     print bcolors.OKGREEN + "\nNouvelles clefs:\n" + bcolors.ENDC
     news = keysB - keysA
-    for key in news : print "\t" + key
+    for key in news : print "\t" + bcolors.OKBLUE + key + bcolors.ENDC + " : " + parser.get(sections[0], key)
     print "\n"
 
 if __name__ == "__main__":
