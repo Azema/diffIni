@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 
 import os
 import re
@@ -26,6 +26,13 @@ class bcolors:
         self.FAIL = ''
         self.ENDC = ''
 
+def getConfigParser(filename):
+    parser = ConfigParser()
+    parser.optionxform = str
+    parser.MAX_INTERPOLATION_DEPTH = 1
+    parser.read(filename)
+    return parser
+
 def main():
     usage = "usage: %prog [-h|--help] -i|--ini file -d|--dist file"
     parser = optparse.OptionParser(usage, version="%prog 0.1")
@@ -37,20 +44,17 @@ def main():
     if not options.origin or not options.dist :
       parser.error("incorrect number of arguments")
 
-    parser = ConfigParser()
-    parser.read(options.origin)
-    sections = parser.sections()
-    items = parser.items(sections[0])
+    confIni = getConfigParser(options.origin)
     keysA = []
-    for key, val in items: keysA.append(key)
+    for key, val in confIni.items(confIni.sections()[0]): keysA.append(key)
     keysA = set(keysA)
 
-    parser = ConfigParser()
-    parser.read(options.dist)
-    sections = parser.sections()
-    items = parser.items(sections[0])
+    confDist = getConfigParser(options.dist)
+    section = confDist.sections()[0]
+    if confDist.has_section("sectionName"):
+        section = "sectionName"
     keysB = []
-    for key, val in items: keysB.append(key)
+    for key, val in confDist.items(section): keysB.append(key)
     keysB = set(keysB)
  
     print bcolors.WARNING + "\nClefs obsoletes:\n" + bcolors.ENDC
@@ -58,8 +62,10 @@ def main():
     for key in obsolets : print "\t" + key
     print bcolors.OKGREEN + "\nNouvelles clefs:\n" + bcolors.ENDC
     news = keysB - keysA
-    for key in news : print "\t" + key
+    for key in news : print "\t" + bcolors.OKBLUE + key + bcolors.ENDC + " : " + confDist.get(section, key)
     print "\n"
 
 if __name__ == "__main__":
     main()
+
+# vim: set expandtab ai ts=4 sw=4 nu:
